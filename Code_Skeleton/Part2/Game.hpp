@@ -92,7 +92,7 @@ protected: // All members here are protected, instead of private for testing pur
 				}
 				//need that t will have some stat time and end time
 				for(int i = t->row_start; i <= t->row_end; i++){
-					for(uint j = 1; j < game->current_board[i].size()-1; j++){
+					for(uint j = 1; j < game->board_width-1; j++){
 						neighbors_alive = 0;
 						if(game->current_board[i+1][j+1] == 1 ||
 						   game->current_board[i+1][j] == 1 ||
