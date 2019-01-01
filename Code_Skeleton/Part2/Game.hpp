@@ -3,6 +3,15 @@
 /*--------------------------------------------------------------------------------
 								  Auxiliary Structures
 --------------------------------------------------------------------------------*/
+
+#include "Headers.hpp"
+#include "Thread.hpp"
+#include "PCQueue.hpp"
+#include "utils.hpp"
+
+#define LIVE_CELL 1
+#define DEAD_CELL 0
+
 struct game_params {
 	// All here are derived from ARGV, the program's input parameters. 
 	uint n_gen;
@@ -37,12 +46,69 @@ protected: // All members here are protected, instead of private for testing pur
 	vector<float> m_tile_hist; 	 // Shared Timing history for tiles: First m_gen_num cells are the calculation durations for tiles in generation 1 and so on. 
 							   	 // Note: In your implementation, all m_thread_num threads must write to this structure. 
 	vector<float> m_gen_hist;  	 // Timing history for generations: x=m_gen_hist[t] iff generation t was calculated in x microseconds
-	vector<Thread*> m_threadpool // A storage container for your threads. This acts as the threadpool. 
+	vector<Thread*> m_threadpool; // A storage container for your threads.
+	// This acts as the threadpool.
 
 	bool interactive_on; // Controls interactive mode - that means, prints the board as an animation instead of a simple dump to STDOUT 
 	bool print_on; // Allows the printing of the board. Turn this off when you are checking performance (Dry 3, last question)
 	
 	// TODO: Add in your variables and synchronization primitives  
 
+	PCQueue<T> queue; //TODO: change T to specific type
+	bool_mat current_board;
+	bool_mat next_move_board;
+
+	class Consumer: public Thread{ //a subclass of the thread class, need to
+		// implement thread_workload (to override the implementation of thread)
+		Game* game;
+		Consumer(uint thread_id, Game* game): Thread(thread_id), game(game){}
+		~Consumer();
+
+	protected:
+		void thread_workload(){
+			int neighbors_alive = 0;
+			while(true){
+				//where put timer
+
+
+				// WHAT IS TASK
+				T t = game->queue->pop(); //TODO: change T to specific type
+				if(t->start == -1){
+					delete(t);
+					return;
+				}
+				//need that t will have some stat time and end time
+				for(int i = t->start_time; i <= t->end_time; i++){
+					for(uint j = 1; j < game->current_board[i].size()-1; j++){
+						neighbors_alive = 0;
+						if(game->current_board[i+1][j+1] == 1 ||
+						   game->current_board[i+1][j] == 1 ||
+						   game->current_board[i+1][j-1] == 1 ||
+						   game->current_board[i][j-1] == 1 ||
+						   game->current_board[i][j+1] == 1 ||
+						   game->current_board[i-1][j+1] == 1 ||
+						   game->current_board[i-1][j] == 1 ||
+						   game->current_board[i-1][j-1] == 1 ){
+							neighbors_alive++;
+						}
+						//a live cell with different then 2 or number of
+						// neighbors will beacome dead cell in the next move
+						if(game->current_board[i][j] == LIVE_CELL &&
+						   (neighbors_alive != 2 && neighbors_alive != 3)){
+							game->next_move_board[i][j] = DEAD_CELL;
+						}
+						//a dead cell with exactly 3 neighbors will beacome
+						// alive in the next move
+						if(game->current_board[i][j] == DEAD_CELL &&
+								neighbors_alive == 3){
+							game->next_move_board = LIVE_CELL;
+						}
+					}
+				}
+			}
+		}
+
+
+	};
 };
 #endif
