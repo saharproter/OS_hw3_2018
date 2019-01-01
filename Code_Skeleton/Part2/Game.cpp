@@ -25,7 +25,6 @@ void Game::run() {
 }
 
 void Game::_init_game() {
-    //TODO: set s to semaphore(0)
 	// Create threads
 	// Create game fields
 	// Start the threads
