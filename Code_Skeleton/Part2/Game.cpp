@@ -51,6 +51,8 @@ void Game::_step(uint curr_gen) {
 
 	// Swap pointers between current and next field
     current_board = next_move_board;
+
+    //TODO: something with curr_gen
 }
 
 void Game::_destroy_game(){
