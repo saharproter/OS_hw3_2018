@@ -5,6 +5,10 @@
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
+Game::Game(game_params params){
+    //TODO create board from file and set sizes and num of threads and num of gen
+}
+
 void Game::run() {
 
 	_init_game(); // Starts the threads and all other variables you need
@@ -21,6 +25,7 @@ void Game::run() {
 }
 
 void Game::_init_game() {
+    //TODO: set s to semaphore(0)
 	// Create threads
 	// Create game fields
 	// Start the threads
@@ -29,8 +34,23 @@ void Game::_init_game() {
 
 void Game::_step(uint curr_gen) {
 	// Push jobs to queue
-	// Wait for the workers to finish calculating 
-	// Swap pointers between current and next field 
+    int size_row = board_height / m_thread_num;
+    int curr_start = 0;
+    done_tasks_num = 0;
+    for(int i=1;i<m_thread_num;i++){
+        if(i == m_thread_num && board_height % m_thread_num != 0 )
+            Task t = new T(curr_start , curr_start + size_row + (board_height % m_thread_num));
+        else
+            Task t = new T(curr_start , curr_start + size_row);
+        m_threadpool.push(t);
+        curr_start += size_row;
+    }
+
+	// Wait for the workers to finish calculating
+    barier.down();
+
+	// Swap pointers between current and next field
+    current_board = next_move_board;
 }
 
 void Game::_destroy_game(){
