@@ -6,10 +6,21 @@
 #include "Semaphore.hpp"
 
 
-Semaphore::Semaphore(): count(0), mutex(), cond() {} // Constructs a new
+Semaphore::Semaphore(): count(0), mutex(), cond() {
+    pthread_mutex_init(this->mutex, nullptr);
+    pthread_cond_init(this->cond, nullptr);
+} // Constructs a new
 // semaphore with a counter of 0
-Semaphore::Semaphore(unsigned val): count(val), mutex(), cond() {}
+Semaphore::Semaphore(unsigned val): count(val), mutex(), cond() {
+    pthread_mutex_init(this->mutex, nullptr);
+    pthread_cond_init(this->cond, nullptr);
+}
  // Constructs a new semaphore with a counter of val
+
+Semaphore::~Semaphore() {
+    pthread_mutex_destroy(this->mutex);
+    pthread_cond_destroy(this->cond);
+}
 
 //up = post, down = wait
 void Semaphore::up(){
