@@ -76,63 +76,64 @@ protected: // All members here are protected, instead of private for testing pur
 	int done_tasks_num; //counter for done tasks each generation
 	std::string game_name;
 
-	class Consumer: public Thread{ //a subclass of the thread class, need to
-		// implement thread_workload (to override the implementation of thread)
-		Game* game;
-		Consumer(uint thread_id, Game* game): Thread(thread_id), game(game){}
-		~Consumer();
+};
 
-	protected:
-		void thread_workload(){
-			int neighbors_alive = 0;
-			while(1){
-				Task* t = game->queue->pop();
-				if(t->row_start == -1){
-					delete(t);
-					return;
-				}
-				auto start_time = std::chrono::system_clock::now();
-				for(int i = t->row_start; i <= t->row_end; i++){
-					for(uint j = 1; j < game->board_width-1; j++){
-						neighbors_alive = 0;
-						if(game->current_board[i+1][j+1] == 1 ||
-						   game->current_board[i+1][j] == 1 ||
-						   game->current_board[i+1][j-1] == 1 ||
-						   game->current_board[i][j-1] == 1 ||
-						   game->current_board[i][j+1] == 1 ||
-						   game->current_board[i-1][j+1] == 1 ||
-						   game->current_board[i-1][j] == 1 ||
-						   game->current_board[i-1][j-1] == 1 ){
-							neighbors_alive++;
-						}
-						//a live cell with different then 2 or number of
-						// neighbors will beacome dead cell in the next move
-						if(game->current_board[i][j] == LIVE_CELL &&
-						   (neighbors_alive != 2 && neighbors_alive != 3)){
-							game->next_move_board[i][j] = DEAD_CELL;
-						}
-						//a dead cell with exactly 3 neighbors will beacome
-						// alive in the next move
-						if(game->current_board[i][j] == DEAD_CELL &&
-						   neighbors_alive == 3){
-							game->next_move_board = LIVE_CELL;
-						}
+class Consumer: public Thread{ //a subclass of the thread class, need to
+	// implement thread_workload (to override the implementation of thread)
+	Game* game;
+	Consumer(uint thread_id, Game* game): Thread(thread_id), game(game){}
+	~Consumer();
+
+protected:
+	void thread_workload(){
+		int neighbors_alive = 0;
+		while(1){
+			Task* t = game->queue->pop();
+			if(t->row_start == -1){
+				delete(t);
+				return;
+			}
+			auto start_time = std::chrono::system_clock::now();
+			for(int i = t->row_start; i <= t->row_end; i++){
+				for(uint j = 1; j < game->board_width-1; j++){
+					neighbors_alive = 0;
+					if(game->current_board[i+1][j+1] == 1 ||
+					   game->current_board[i+1][j] == 1 ||
+					   game->current_board[i+1][j-1] == 1 ||
+					   game->current_board[i][j-1] == 1 ||
+					   game->current_board[i][j+1] == 1 ||
+					   game->current_board[i-1][j+1] == 1 ||
+					   game->current_board[i-1][j] == 1 ||
+					   game->current_board[i-1][j-1] == 1 ){
+						neighbors_alive++;
+					}
+					//a live cell with different then 2 or number of
+					// neighbors will beacome dead cell in the next move
+					if(game->current_board[i][j] == LIVE_CELL &&
+					   (neighbors_alive != 2 && neighbors_alive != 3)){
+						game->next_move_board[i][j] = DEAD_CELL;
+					}
+					//a dead cell with exactly 3 neighbors will beacome
+					// alive in the next move
+					if(game->current_board[i][j] == DEAD_CELL &&
+					   neighbors_alive == 3){
+						game->next_move_board = LIVE_CELL;
 					}
 				}
-				delete(t);
-				game->mutex.down();
-				done_tasks_num++;
-				if(done_tasks_num == m_thread_num)
-					game->barrier.up();
-				auto end_time = std::chrono::system_clock::now();
-				(game->m_tile_hist).push_back((float) std::chrono::duration_cast
-						<std::chrono::microseconds>(end_time - start_time).count());
-				game->mutex.up();
 			}
+			delete(t);
+			game->mutex.down();
+			done_tasks_num++;
+			if(done_tasks_num == m_thread_num)
+				game->barrier.up();
+			auto end_time = std::chrono::system_clock::now();
+			(game->m_tile_hist).push_back((float) std::chrono::duration_cast
+					<std::chrono::microseconds>(end_time - start_time).count());
+			game->mutex.up();
 		}
+	}
 
 
-	};
 };
 
 ///----------------hw3----------------///
