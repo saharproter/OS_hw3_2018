@@ -4,9 +4,9 @@
 								  Auxiliary Structures
 --------------------------------------------------------------------------------*/
 
-#include "Headers.hpp"
+#include "../Part1/Headers.hpp"
 #include "Thread.hpp"
-#include "PCQueue.hpp"
+#include "../Part1/PCQueue.hpp"
 #include "utils.hpp"
 
 #define DEAD_CELL 0
@@ -118,6 +118,7 @@ protected: // All members here are protected, instead of private for testing pur
 						}
 					}
 				}
+				delete(t);
 				game->mutex.down();
 				done_tasks_num++;
 				if(done_tasks_num == m_thread_num)

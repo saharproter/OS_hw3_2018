@@ -1,13 +1,13 @@
 #ifndef _QUEUEL_H
 #define _QUEUEL_H
-#include "Headers.h"
+#include "Headers.hpp"
 // Single Producer - Multiple Consumer queue
 template <typename T>class PCQueue
 {
 
 public:
-    PCQueue(){
-        this->queue = new std::queue<T>;
+    PCQueue() : queue(){
+        //this->queue = new std::queue<T>;
         pthread_mutex_init(&(this->mutex), nullptr);
         pthread_cond_init(&(this->cond), nullptr);
     }
@@ -15,13 +15,13 @@ public:
 	// thread to enter and remove an item from the front of the queue and return it. 
 	// Assumes multiple consumers.
 	T pop(){
-        pthread_mutex_lock(this->mutex);
-        while(queue.empty()){
-            pthread_cond_wait(this->cond, this->mutex);
+        pthread_mutex_lock(&(this->mutex));
+        while(this->queue.empty()){
+            pthread_cond_wait(&(this->cond), &(this->mutex));
         }
-        T item = queue.front();
-        queue.pop();
-        pthread_mutex_unlock(this->mutex);
+        T item = this->queue.front();
+        this->queue.pop();
+        pthread_mutex_unlock(&(this->mutex));
         return item;
     }
 
@@ -30,14 +30,15 @@ public:
 	// Assumes single producer 
 	void push(const T& item){
         pthread_mutex_lock(&(this->mutex));
-        queue.push(item);
+        this->queue.push(item);
         pthread_mutex_unlock(&(this->mutex));
-        pthread_cond_brodcast(&(this->cond));
+        pthread_cond_broadcast(&(this->cond));
     }
 
     ~PCQueue(){
         pthread_mutex_destroy(&(this->mutex));
-        delete(this->queue);
+        pthread_cond_destroy(&(this->cond));
+        //delete(this->queue);
     }
 
 

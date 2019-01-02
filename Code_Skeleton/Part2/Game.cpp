@@ -1,18 +1,17 @@
-#include <Game.hpp>
+#include "Game.hpp"
 
 #define DEAD_CELL 0
 #define LIVE_CELL 1
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
-Game::Game(game_params params): barrier(0), mutex(1){
+Game::Game(game_params params): queue(), barrier(0), mutex(1){
 	//TODO create board from file and set sizes and num of threads and num of gen
-    m_gen_num = params.n_gen;
-    game_name = params.filename;
-    m_thread_num = params.n_thread;
-    interactive_on = params.interactive_on;
-    print_on = params.print_on;
-	queue = new PCQueue<Task*>();
+    this->m_gen_num = params.n_gen;
+    this->game_name = params.filename;
+    this->m_thread_num = params.n_thread;
+    this->interactive_on = params.interactive_on;
+    this->print_on = params.print_on;
 }
 
 void Game::run() {
@@ -36,8 +35,8 @@ void Game::_init_game() {
 	// TODO Create game fields
     vector<std::string> lines = utils::read_lines(game_name);
     vector<string> vec = utils::split(lines[0], ' ');
-    current_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
-    next_move_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
+    this->current_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
+    this->next_move_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
 
     vector<vector<string>> temp;
     for(uint i = 0; i < lines.size(); i++){
@@ -75,7 +74,7 @@ void Game::_init_game() {
     // Create threads
     m_thread_num = thread_num();
     for(uint i = 0; i < m_thread_num; i++){
-        m_threadpool.push_back(new Consumer(i,this));
+        this->m_threadpool.push_back(new Consumer(i,this));
     }
     // Start the threads
     for(uint i = 0; i < m_thread_num; i++){
@@ -89,18 +88,19 @@ void Game::_step(uint curr_gen) {
 	int size_row = board_height / m_thread_num;
 	int curr_start = 0;
 	done_tasks_num = 0;
-	for(int i = 1; i < m_thread_num; i++){
+	for(uint i = 1; i < m_thread_num; i++){
+        Task* t;
 		if(i == m_thread_num && board_height % m_thread_num != 0 )
-			Task* t = new Task(curr_start , curr_start + size_row +
+			t = new Task(curr_start , curr_start + size_row +
                     (board_height % m_thread_num));
 		else
-			Task* t = new Task(curr_start , curr_start + size_row);
-		m_threadpool.push(t);
+			t = new Task(curr_start , curr_start + size_row);
+		this->queue.push(t);
 		curr_start += size_row;
 	}
 
 	// Wait for the workers to finish calculating
-	barier.down();
+	this->barrier.down();
 
 	// Swap pointers between current and next field
 	current_board = next_move_board;
@@ -110,9 +110,9 @@ void Game::_step(uint curr_gen) {
 
 void Game::_destroy_game(){
 	// Destroys board and frees all threads and resources
-    for(uint i = 0; i < m_thrad_num; i++){
+    for(uint i = 0; i < this->m_thread_num; i++){
         Task* t = new Task(-1,1); //so it will be deleted
-        queue->push(t);
+        queue.push(t);
     }
     //wait till all the threads are finished
     for(uint i = 0; i < m_thread_num; i++){
@@ -122,7 +122,7 @@ void Game::_destroy_game(){
     for(uint i = 0; i < m_thread_num; i++){
         delete(m_threadpool[i]);
     }
-    delete(queue);
+    //delete(queue);
 	// Not implemented in the Game's destructor for testing purposes. 
 	// Testing of your implementation will presume all threads are joined here
 }
@@ -147,13 +147,13 @@ uint Game::thread_num() const {
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
-
+/*
 inline static void print_board(const char* header) {
 
 	if(print_on){
 
 		// Clear the screen, to create a running animation 
-		if(interactive_on)
+		if(this->interactive_on)
 			system("clear");
 
 		// Print small header if needed
@@ -163,7 +163,7 @@ inline static void print_board(const char* header) {
 		// TODO: Print the board
         uint field_width = (int)current_board[0].size() - 2 ;
         uint field_height = (int)current_board.size() - 2;
-        field = currnt_board;
+        bool_mat field = this->currnt_board;
         cout << u8"╔" << string(u8"═") * field_width << u8"╗" << endl;
         for (uint i = 1; i <= field_height; ++i) {
             cout << u8"║";
@@ -181,7 +181,7 @@ inline static void print_board(const char* header) {
 
 }
 
-
+*/
 
 /* Function sketch to use for printing the board. You will need to decide its placement and how exactly 
 	to bring in the field's parameters. 
