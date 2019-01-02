@@ -9,8 +9,8 @@
 #include "PCQueue.hpp"
 #include "utils.hpp"
 
-#define DEAD_CELL ' '
-#define LIVE_CELL 'X'
+#define DEAD_CELL 0
+#define LIVE_CELL 1
 
 struct game_params {
 	// All here are derived from ARGV, the program's input parameters. 
@@ -22,9 +22,12 @@ struct game_params {
 };
 
 ///----------------hw3----------------///
-struct Task {
+class Task{
+public:
 	int row_start;
 	int row_end;
+	Task(int row_start, int row_end): row_start(row_start), row_end(row_end){}
+	~Task(){}
 };
 ///----------------hw3----------------///
 
@@ -62,14 +65,15 @@ protected: // All members here are protected, instead of private for testing pur
 
 ///----------------hw3----------------///
 
-	PCQueue<Task> queue;
-	bool** current_board;   //field
+	PCQueue<Task*> queue;
+	bool_mat current_board;   //field
 	int board_width;
 	int board_height;
-	bool** next_move_board; //next move field
+	bool_mat next_move_board; //next move field
 	Semaphore barrier;    //Semaphore(0)
 	Semaphore mutex;  //Semaphore(1)
 	int done_tasks_num; //counter for done tasks each generation
+	std::string game_name;
 
 	class Consumer: public Thread{ //a subclass of the thread class, need to
 		// implement thread_workload (to override the implementation of thread)
