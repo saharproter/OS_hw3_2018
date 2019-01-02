@@ -1,17 +1,18 @@
 #include <Game.hpp>
 
-#define DEAD_CELL ' '
-#define LIVE_CELL 'X'
+#define DEAD_CELL 0
+#define LIVE_CELL 1
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
-Game::Game(game_params params){
+Game::Game(game_params params): barrier(0), mutex(1){
 	//TODO create board from file and set sizes and num of threads and num of gen
     m_gen_num = params.n_gen;
+    game_name = params.filename;
     m_thread_num = params.n_thread;
     interactive_on = params.interactive_on;
     print_on = params.print_on;
-	queue = new PCQueue<task>();
+	queue = new PCQueue<Task*>();
 }
 
 void Game::run() {
@@ -29,12 +30,57 @@ void Game::run() {
 }
 
 void Game::_init_game() {
-	// Create threads
     done_tasks_num = 0;
-    //TODO initalizing semaphores ?
+    //TODO NEED TO INITIALIZE THE SEMAPHORES HERE?
 
-	// Create game fields
-	// Start the threads
+	// TODO Create game fields
+    vector<std::string> lines = utils::read_lines(game_name);
+    vector<string> vec = utils::split(lines[0], ' ');
+    current_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
+    next_move_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
+
+    vector<vector<string>> temp;
+    for(uint i = 0; i < lines.size(); i++){
+        lines[i] = "0 " + lines[i] + " 0";
+    }
+    string str = "";
+    for(uint i = 0; i < lines[0].size(); i++){
+        if(i % 2 == 0){
+            str.push_back('0');
+        }
+        else{
+            str.push_back(' ');
+        }
+    }
+    temp.push_back(utils::split(str,' '));
+    for(uint i = 0; i < lines.size(); i++){
+        temp.push_back(utils::split(lines[i],' '));
+    }
+    temp.push_back(utils::split(str,' '));
+    board_height = lines.size();
+
+    for(uint i = 0; i < temp.size(); i++){
+        for(uint j = 0; j < temp[0].size(); j++){
+            if(temp[i][j] == "0"){
+                current_board[i][j] = DEAD_CELL;
+            }
+            else{
+                current_board[i][j] = LIVE_CELL;
+            }
+        }
+    }
+    next_move_board = current_board;
+
+
+    // Create threads
+    m_thread_num = thread_num();
+    for(uint i = 0; i < m_thread_num; i++){
+        m_threadpool.push_back(new Consumer(i,this));
+    }
+    // Start the threads
+    for(uint i = 0; i < m_thread_num; i++){
+        m_threadpool[i]->start();
+    }
 	// Testing of your implementation will presume all threads are started here
 }
 
@@ -45,9 +91,10 @@ void Game::_step(uint curr_gen) {
 	done_tasks_num = 0;
 	for(int i = 1; i < m_thread_num; i++){
 		if(i == m_thread_num && board_height % m_thread_num != 0 )
-			Task t = new T(curr_start , curr_start + size_row + (board_height % m_thread_num));
+			Task* t = new Task(curr_start , curr_start + size_row +
+                    (board_height % m_thread_num));
 		else
-			Task t = new T(curr_start , curr_start + size_row);
+			Task* t = new Task(curr_start , curr_start + size_row);
 		m_threadpool.push(t);
 		curr_start += size_row;
 	}
@@ -62,7 +109,20 @@ void Game::_step(uint curr_gen) {
 }
 
 void Game::_destroy_game(){
-	// Destroys board and frees all threads and resources 
+	// Destroys board and frees all threads and resources
+    for(uint i = 0; i < m_thrad_num; i++){
+        Task* t = new Task(-1,1); //so it will be deleted
+        queue->push(t);
+    }
+    //wait till all the threads are finished
+    for(uint i = 0; i < m_thread_num; i++){
+        m_threadpool[i]->join();
+    }
+    //delete all the threads
+    for(uint i = 0; i < m_thread_num; i++){
+        delete(m_threadpool[i]);
+    }
+    delete(queue);
 	// Not implemented in the Game's destructor for testing purposes. 
 	// Testing of your implementation will presume all threads are joined here
 }
@@ -75,11 +135,19 @@ const vector<float> Game::tile_hist() const{
 	return m_tile_hist;
 }
 
+uint Game::thread_num() const {
+    if((uint)board_height >= m_thread_num){
+        return m_thread_num;
+    }
+    return (uint)board_height;
+}
+
 
 
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
+
 inline static void print_board(const char* header) {
 
 	if(print_on){
@@ -92,7 +160,19 @@ inline static void print_board(const char* header) {
 		if (header != NULL)
 			cout << "<------------" << header << "------------>" << endl;
 
-		// TODO: Print the board 
+		// TODO: Print the board
+        uint field_width = (int)current_board[0].size() - 2 ;
+        uint field_height = (int)current_board.size() - 2;
+        field = currnt_board;
+        cout << u8"╔" << string(u8"═") * field_width << u8"╗" << endl;
+        for (uint i = 1; i <= field_height; ++i) {
+            cout << u8"║";
+            for (uint j = 1; j <= field_width; ++j) {
+                cout << (field[i][j] ? u8"█" : u8"░");
+            }
+            cout << u8"║" << endl;
+        }
+        cout << u8"╚" << string(u8"═") * field_width << u8"╝" << endl;
 
 		// Display for GEN_SLEEP_USEC micro-seconds on screen 
 		if(interactive_on)
@@ -100,6 +180,7 @@ inline static void print_board(const char* header) {
 	}
 
 }
+
 
 
 /* Function sketch to use for printing the board. You will need to decide its placement and how exactly 
