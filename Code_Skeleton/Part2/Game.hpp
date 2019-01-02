@@ -7,6 +7,7 @@
 #include "../Part1/Headers.hpp"
 #include "Thread.hpp"
 #include "../Part1/PCQueue.hpp"
+#include "../Part1/Semaphore.hpp"
 #include "utils.hpp"
 
 #define DEAD_CELL 0
