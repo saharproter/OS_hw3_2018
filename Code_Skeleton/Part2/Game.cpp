@@ -6,16 +6,20 @@
 								
 --------------------------------------------------------------------------------*/
 Game::Game(game_params params){
-    //TODO create board from file and set sizes and num of threads and num of gen
+	//TODO create board from file and set sizes and num of threads and num of gen
+    m_gen_num = params.n_gen;
+    m_thread_num = params.n_thread;
+    interactive_on = params.interactive_on;
+    print_on = params.print_on;
+	queue = new PCQueue<task>();
 }
 
 void Game::run() {
-
 	_init_game(); // Starts the threads and all other variables you need
 	print_board("Initial Board");
 	for (uint i = 0; i < m_gen_num; ++i) {
 		auto gen_start = std::chrono::system_clock::now();
-		_step(i); // Iterates a single generation 
+		_step(i); // Iterates a single generation
 		auto gen_end = std::chrono::system_clock::now();
 		m_gen_hist.push_back((float)std::chrono::duration_cast<std::chrono::microseconds>(gen_end - gen_start).count());
 		print_board(NULL);
@@ -26,6 +30,9 @@ void Game::run() {
 
 void Game::_init_game() {
 	// Create threads
+    done_tasks_num = 0;
+    //TODO initalizing semaphores ?
+
 	// Create game fields
 	// Start the threads
 	// Testing of your implementation will presume all threads are started here
@@ -33,25 +40,25 @@ void Game::_init_game() {
 
 void Game::_step(uint curr_gen) {
 	// Push jobs to queue
-    int size_row = board_height / m_thread_num;
-    int curr_start = 0;
-    done_tasks_num = 0;
-    for(int i=1;i<m_thread_num;i++){
-        if(i == m_thread_num && board_height % m_thread_num != 0 )
-            Task t = new T(curr_start , curr_start + size_row + (board_height % m_thread_num));
-        else
-            Task t = new T(curr_start , curr_start + size_row);
-        m_threadpool.push(t);
-        curr_start += size_row;
-    }
+	int size_row = board_height / m_thread_num;
+	int curr_start = 0;
+	done_tasks_num = 0;
+	for(int i = 1; i < m_thread_num; i++){
+		if(i == m_thread_num && board_height % m_thread_num != 0 )
+			Task t = new T(curr_start , curr_start + size_row + (board_height % m_thread_num));
+		else
+			Task t = new T(curr_start , curr_start + size_row);
+		m_threadpool.push(t);
+		curr_start += size_row;
+	}
 
 	// Wait for the workers to finish calculating
-    barier.down();
+	barier.down();
 
 	// Swap pointers between current and next field
-    current_board = next_move_board;
+	current_board = next_move_board;
 
-    //TODO: something with curr_gen
+	//TODO: something with curr_gen
 }
 
 void Game::_destroy_game(){
@@ -60,12 +67,22 @@ void Game::_destroy_game(){
 	// Testing of your implementation will presume all threads are joined here
 }
 
+const vector<float> Game::gen_hist() const{
+	return m_gen_hist;
+}
+
+const vector<float> Game::tile_hist() const{
+	return m_tile_hist;
+}
+
+
+
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
 inline static void print_board(const char* header) {
 
-	if(print_on){ 
+	if(print_on){
 
 		// Clear the screen, to create a running animation 
 		if(interactive_on)
@@ -74,7 +91,7 @@ inline static void print_board(const char* header) {
 		// Print small header if needed
 		if (header != NULL)
 			cout << "<------------" << header << "------------>" << endl;
-		
+
 		// TODO: Print the board 
 
 		// Display for GEN_SLEEP_USEC micro-seconds on screen 
