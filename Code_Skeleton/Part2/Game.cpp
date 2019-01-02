@@ -147,8 +147,8 @@ uint Game::thread_num() const {
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
-/*
-inline static void print_board(const char* header) {
+
+inline static void Game::print_board(const char* header) {
 
 	if(print_on){
 
@@ -181,7 +181,7 @@ inline static void print_board(const char* header) {
 
 }
 
-*/
+
 
 /* Function sketch to use for printing the board. You will need to decide its placement and how exactly 
 	to bring in the field's parameters. 
