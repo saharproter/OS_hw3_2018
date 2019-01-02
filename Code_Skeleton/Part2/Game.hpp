@@ -125,8 +125,8 @@ protected:
 			}
 			delete(t);
 			game->mutex.down();
-			done_tasks_num++;
-			if(done_tasks_num == m_thread_num)
+			game->done_tasks_num++;
+			if(game->done_tasks_num == game->m_thread_num)
 				game->barrier.up();
 			auto end_time = std::chrono::system_clock::now();
 			(game->m_tile_hist).push_back((float) std::chrono::duration_cast

@@ -5,7 +5,7 @@
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
-Game::Game(game_params params): queue(), barrier(0), mutex(1){
+Game::Game(game_params params): m_threadpool(), queue(), barrier(0), mutex(1){
 	//TODO create board from file and set sizes and num of threads and num of gen
     this->m_gen_num = params.n_gen;
     this->game_name = params.filename;
@@ -72,13 +72,13 @@ void Game::_init_game() {
 
 
     // Create threads
-    m_thread_num = thread_num();
+    this->m_thread_num = thread_num();
     for(uint i = 0; i < m_thread_num; i++){
         this->m_threadpool.push_back(new Consumer(i,this));
     }
     // Start the threads
     for(uint i = 0; i < m_thread_num; i++){
-        m_threadpool[i]->start();
+        this->m_threadpool[i]->start();
     }
 	// Testing of your implementation will presume all threads are started here
 }
