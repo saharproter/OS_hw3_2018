@@ -148,8 +148,8 @@ uint Game::thread_num() const {
 								
 --------------------------------------------------------------------------------*/
 
-inline static void Game::print_board(const char* header) {
-
+inline void Game::print_board(const char* header) {
+/*
 	if(print_on){
 
 		// Clear the screen, to create a running animation 
@@ -178,7 +178,7 @@ inline static void Game::print_board(const char* header) {
 		if(interactive_on)
 			usleep(GEN_SLEEP_USEC);
 	}
-
+*/
 }
 
 

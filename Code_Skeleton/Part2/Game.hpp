@@ -118,7 +118,7 @@ protected: // All members here are protected, instead of private for testing pur
 						// alive in the next move
 						if(game->current_board[i][j] == DEAD_CELL &&
 						   neighbors_alive == 3){
-							game->next_move_board = LIVE_CELL;
+							game->next_move_board[i][j] = LIVE_CELL;
 						}
 					}
 				}
