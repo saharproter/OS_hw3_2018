@@ -82,7 +82,7 @@ protected: // All members here are protected, instead of private for testing pur
 	public:
 		// implement thread_workload (to override the implementation of thread)
 		Game* game;
-		Consumer(uint thread_id, Game* game): Thread(thread_id), game(game){}
+		Consumer(uint thread_id, Game* game): Thread::Thread(thread_id), game(game){}
 		~Consumer(){}
 
 	protected:
