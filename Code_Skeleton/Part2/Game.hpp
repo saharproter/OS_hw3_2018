@@ -86,7 +86,7 @@ protected: // All members here are protected, instead of private for testing pur
 		~Consumer(){}
 
 	protected:
-		void thread_workload(){
+		void thread_workload() override{
 			int neighbors_alive = 0;
 			while(1){
 				Task* t = game->queue.pop();
