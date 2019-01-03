@@ -115,7 +115,7 @@ void Game::_step(uint curr_gen) {
 void Game::_destroy_game(){
 	// Destroys board and frees all threads and resources
     for(uint i = 0; i < this->m_thread_num; i++){
-        Task* t = new Task(-1,1); //so it will be deleted
+        Task* t = new Task(-1,2); //so it will be deleted
         queue.push(t);
     }
     //wait till all the threads are finished
