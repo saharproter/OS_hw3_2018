@@ -14,6 +14,10 @@ Game::Game(game_params params): m_threadpool(), queue(), barrier(0), mutex(1){
     this->print_on = params.print_on;
 }
 
+Game::~Game(){
+    _destroy_game();
+}
+
 void Game::run() {
 	_init_game(); // Starts the threads and all other variables you need
 	print_board("Initial Board");
