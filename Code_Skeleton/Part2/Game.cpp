@@ -2,6 +2,9 @@
 
 #define DEAD_CELL 0
 #define LIVE_CELL 1
+
+#define ZERO '0'
+#define SPACE ' '
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
@@ -34,41 +37,35 @@ void Game::run() {
 
 void Game::_init_game() {
     done_tasks_num = 0;
-    //TODO NEED TO INITIALIZE THE SEMAPHORES HERE?
 
 	// TODO Create game fields
     vector<std::string> lines = utils::read_lines(game_name);
-    vector<string> vec = utils::split(lines[0], ' ');
+    vector<string> vec = utils::split(lines[0], SPACE);
     this->current_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
     this->next_move_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
 
+    for(uint i = 0; i < lines.size()+2; i++){
+        for(uint j = 0; j < vec.size()+2; j++){
+            this->current_board[i][j] = 0;
+        }
+    }
+
     vector<vector<string>> temp;
+    
     for(uint i = 0; i < lines.size(); i++){
-        lines[i] = "0 " + lines[i] + " 0";
+        temp.push_back(utils::split(lines[i],SPACE));
     }
-    string str = "";
-    for(uint i = 0; i < lines[0].size(); i++){
-        if(i % 2 == 0){
-            str.push_back('0');
-        }
-        else{
-            str.push_back(' ');
-        }
-    }
-    temp.push_back(utils::split(str,' '));
-    for(uint i = 0; i < lines.size(); i++){
-        temp.push_back(utils::split(lines[i],' '));
-    }
-    temp.push_back(utils::split(str,' '));
+    
     board_height = lines.size();
+    board_width = lines[0].size();
 
     for(uint i = 0; i < temp.size(); i++){
         for(uint j = 0; j < temp[0].size(); j++){
             if(temp[i][j] == "0"){
-                current_board[i][j] = DEAD_CELL;
+                current_board[i + 1][j + 1] = DEAD_CELL;
             }
             else{
-                current_board[i][j] = LIVE_CELL;
+                current_board[i + 1][j + 1] = LIVE_CELL;
             }
         }
     }
@@ -89,27 +86,22 @@ void Game::_init_game() {
 
 void Game::_step(uint curr_gen) {
 	// Push jobs to queue
-    printf("num %d\n",m_thread_num);
 	int size_row = board_height / m_thread_num;
-	int curr_start = 0;
+	int curr_start = 1;
 	done_tasks_num = 0;
 	for(uint i = 0; i < m_thread_num; i++){
-        Task* t;/*
-		if(i == m_thread_num && board_height % m_thread_num != 0 )
-			t = new Task(curr_start , curr_start + size_row +
+        Task* t = new Task(curr_start , curr_start + size_row +
                     (board_height % m_thread_num));
-		else*/
-			t = new Task(curr_start , curr_start + size_row);
-        printf("step push %d\n",i);
 		this->queue.push(t);
 		curr_start += size_row;
 	}
-    printf("should reach\n");
+
 	// Wait for the workers to finish calculating
 	this->barrier.down();
-    printf("222\n");
+
 	// Swap pointers between current and next field
-	//current_board = next_move_board;
+	current_board = next_move_board;
+
 	//TODO: something with curr_gen
 }
 
@@ -120,15 +112,11 @@ void Game::_destroy_game(){
         queue.push(t);
     }
     //wait till all the threads are finished
-    for(uint i = 0; i < m_thread_num; i++){
-        m_threadpool[i]->join();
-    }
+    
     //delete all the threads
-    /*
-    for(uint i = 0; i < m_thread_num; i++){
-        delete(m_threadpool[i]);
-    }*/
-    //delete(queue);
+    
+     m_threadpool.erase(m_threadpool.begin(), m_threadpool.end());
+    
 	// Not implemented in the Game's destructor for testing purposes. 
 	// Testing of your implementation will presume all threads are joined here
 }

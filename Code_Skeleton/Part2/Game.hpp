@@ -68,12 +68,12 @@ protected: // All members here are protected, instead of private for testing pur
 
 	PCQueue<Task*> queue;
 	bool_mat current_board;   //field
-	uint board_width;
-	uint board_height;
+	int board_width;
+	int board_height;
 	bool_mat next_move_board; //next move field
 	Semaphore barrier;    //Semaphore(0)
 	Semaphore mutex;  //Semaphore(1)
-	uint done_tasks_num; //counter for done tasks each generation
+	int done_tasks_num; //counter for done tasks each generation
 	std::string game_name;
 
 	inline void print_board(const char* header);
@@ -88,32 +88,38 @@ protected: // All members here are protected, instead of private for testing pur
 	protected:
 		void thread_workload() override{
 			int neighbors_alive = 0;
+			cout << game->board_width << endl;
 			while(1){
 				Task* t = game->queue.pop();
-				printf("t end %d\n", t->row_start);
 				if(t->row_start == -1){
 					delete(t);
-					printf("done\n");
 					return;
 				}
-				//auto start_time = std::chrono::system_clock::now();
-				for(int i = t->row_start; i <= t->row_end; i++){
+				auto start_time = std::chrono::system_clock::now();
+				for(int i = t->row_start; i < t->row_end; i++){
 					for(uint j = 1; j < game->board_width-1; j++){
-						//printf("%d\n",i);
-						neighbors_alive = 0;
-						if(game->current_board[i+1][j+1] == 1 ||
-						   game->current_board[i+1][j] == 1 ||
-						   game->current_board[i+1][j-1] == 1 ||
-						   game->current_board[i][j-1] == 1 ||
-						   game->current_board[i][j+1] == 1 ||
-						   game->current_board[i-1][j+1] == 1 ||
-						   game->current_board[i-1][j] == 1 ||
-						   game->current_board[i-1][j-1] == 1 ){
-							neighbors_alive++;
-						}
+						//neighbors_alive = 0;
+                                                //cout << "i: " << i << " j: " << j << endl;
+						// if(game->current_board[i+1][j+1] == 1 ||
+						//    game->current_board[i+1][j] == 1 ||
+						//    game->current_board[i+1][j-1] == 1 ||
+						//    game->current_board[i][j-1] == 1 ||
+						//    game->current_board[i][j+1] == 1 ||
+						//    game->current_board[i-1][j+1] == 1 ||
+						//    game->current_board[i-1][j] == 1 ||
+						//    game->current_board[i-1][j-1] == 1 ){
+						// 	neighbors_alive++;
+						// }
+						neighbors_alive = (game->current_board[i+1][j+1] == LIVE_CELL) +
+										(game->current_board[i+1][j] == LIVE_CELL) +
+										(game->current_board[i+1][j-1] == LIVE_CELL) +
+										(game->current_board[i][j-1] == LIVE_CELL) +
+										(game->current_board[i][j+1] == LIVE_CELL) +
+										(game->current_board[i-1][j+1] == LIVE_CELL) +
+										(game->current_board[i-1][j] == LIVE_CELL) +
+										(game->current_board[i-1][j-1] == LIVE_CELL);
 						//a live cell with different then 2 or number of
 						// neighbors will beacome dead cell in the next move
-						this->game->mutex.down();
 						if(game->current_board[i][j] == LIVE_CELL &&
 						   (neighbors_alive != 2 && neighbors_alive != 3)){
 							game->next_move_board[i][j] = DEAD_CELL;
@@ -124,20 +130,16 @@ protected: // All members here are protected, instead of private for testing pur
 						   neighbors_alive == 3){
 							game->next_move_board[i][j] = LIVE_CELL;
 						}
-						this->game->mutex.up();
 					}
 				}
-				printf("ggg1 %d\n", m_thread_id);
-				//delete(t);
+				delete(t);
 				this->game->mutex.down();
 				game->done_tasks_num++;
-				if(game->done_tasks_num == game->m_thread_num) {
-					printf("ggg2 %d\n", m_thread_id);
+				if(game->done_tasks_num == game->m_thread_num)
 					this->game->barrier.up();
-				}
-				//auto end_time = std::chrono::system_clock::now();
-				//(game->m_tile_hist).push_back((float) std::chrono::duration_cast
-				//		<std::chrono::microseconds>(end_time - start_time).count());
+				auto end_time = std::chrono::system_clock::now();
+				(game->m_tile_hist).push_back((float) std::chrono::duration_cast
+						<std::chrono::microseconds>(end_time - start_time).count());
 				this->game->mutex.up();
 			}
 		}
