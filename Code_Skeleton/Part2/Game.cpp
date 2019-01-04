@@ -87,7 +87,7 @@ void Game::_init_game() {
 void Game::_step(uint curr_gen) {
 	// Push jobs to queue
 	int size_row = board_height / m_thread_num;
-	int curr_start = 1;
+	int curr_start = 0;
 	done_tasks_num = 0;
 	for(uint i = 0; i < m_thread_num; i++){
         Task* t = new Task(curr_start , curr_start + size_row +

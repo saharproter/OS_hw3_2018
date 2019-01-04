@@ -97,7 +97,7 @@ protected: // All members here are protected, instead of private for testing pur
 				}
 				auto start_time = std::chrono::system_clock::now();
 				for(int i = t->row_start; i < t->row_end; i++){
-					for(uint j = 1; j < game->board_width-1; j++){
+					for(uint j = 0; j < game->board_width; j++){
 						//neighbors_alive = 0;
                                                 //cout << "i: " << i << " j: " << j << endl;
 						// if(game->current_board[i+1][j+1] == 1 ||
@@ -110,16 +110,17 @@ protected: // All members here are protected, instead of private for testing pur
 						//    game->current_board[i-1][j-1] == 1 ){
 						// 	neighbors_alive++;
 						// }
-						neighbors_alive = (game->current_board[i+1][j+1] == LIVE_CELL) +
-										(game->current_board[i+1][j] == LIVE_CELL) +
-										(game->current_board[i+1][j-1] == LIVE_CELL) +
-										(game->current_board[i][j-1] == LIVE_CELL) +
-										(game->current_board[i][j+1] == LIVE_CELL) +
-										(game->current_board[i-1][j+1] == LIVE_CELL) +
-										(game->current_board[i-1][j] == LIVE_CELL) +
-										(game->current_board[i-1][j-1] == LIVE_CELL);
+						neighbors_alive = (validIndex(i+1,j+1) && game->current_board[i+1][j+1] == LIVE_CELL) +
+										(validIndex(i+1,j) && game->current_board[i+1][j] == LIVE_CELL) +
+										(validIndex(i+1,j-1) && game->current_board[i+1][j-1] == LIVE_CELL) +
+										(validIndex(i,j-1) && game->current_board[i][j-1] == LIVE_CELL) +
+										(validIndex(i,j+1) && game->current_board[i][j+1] == LIVE_CELL) +
+										(validIndex(i-1,j+1) && game->current_board[i-1][j+1] == LIVE_CELL) +
+										(validIndex(i-1,j) && game->current_board[i-1][j] == LIVE_CELL) +
+										(validIndex(i-1,j-1) && game->current_board[i-1][j-1] == LIVE_CELL);
 						//a live cell with different then 2 or number of
 						// neighbors will beacome dead cell in the next move
+						this->game->mutex.down();
 						if(game->current_board[i][j] == LIVE_CELL &&
 						   (neighbors_alive != 2 && neighbors_alive != 3)){
 							game->next_move_board[i][j] = DEAD_CELL;
@@ -130,6 +131,7 @@ protected: // All members here are protected, instead of private for testing pur
 						   neighbors_alive == 3){
 							game->next_move_board[i][j] = LIVE_CELL;
 						}
+						this->game->mutex.up();
 					}
 				}
 				delete(t);
@@ -144,7 +146,12 @@ protected: // All members here are protected, instead of private for testing pur
 			}
 		}
 
-
+		bool validIndex(uint x,uint y){
+			return (x < game->board_width &&
+					x >= 0 &&
+					y >= 0 &&
+					y < game->board_height);
+		}
 	};
 
 };
