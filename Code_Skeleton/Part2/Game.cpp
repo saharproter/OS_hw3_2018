@@ -108,10 +108,8 @@ void Game::_step(uint curr_gen) {
 	// Wait for the workers to finish calculating
 	this->barrier.down();
     printf("222\n");
-    this->mutex.down();
 	// Swap pointers between current and next field
 	//current_board = next_move_board;
-    this->mutex.up();
 	//TODO: something with curr_gen
 }
 
