@@ -89,14 +89,18 @@ protected: // All members here are protected, instead of private for testing pur
 		void thread_workload() override{
 			int neighbors_alive = 0;
 			while(1){
+				printf("ggg1 %d\n", m_thread_id);
 				Task* t = game->queue.pop();
+				printf("ggg2 %d\n", m_thread_id);
 				if(t->row_start == -1){
 					delete(t);
+					printf("done\n");
 					return;
 				}
 				auto start_time = std::chrono::system_clock::now();
 				for(int i = t->row_start; i <= t->row_end; i++){
 					for(uint j = 1; j < game->board_width-1; j++){
+						//printf("%d\n",i);
 						neighbors_alive = 0;
 						if(game->current_board[i+1][j+1] == 1 ||
 						   game->current_board[i+1][j] == 1 ||
@@ -110,6 +114,7 @@ protected: // All members here are protected, instead of private for testing pur
 						}
 						//a live cell with different then 2 or number of
 						// neighbors will beacome dead cell in the next move
+						this->game->mutex.down();
 						if(game->current_board[i][j] == LIVE_CELL &&
 						   (neighbors_alive != 2 && neighbors_alive != 3)){
 							game->next_move_board[i][j] = DEAD_CELL;
@@ -120,6 +125,7 @@ protected: // All members here are protected, instead of private for testing pur
 						   neighbors_alive == 3){
 							game->next_move_board[i][j] = LIVE_CELL;
 						}
+						this->game->mutex.up();
 					}
 				}
 				delete(t);

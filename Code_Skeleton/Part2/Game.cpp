@@ -89,17 +89,20 @@ void Game::_init_game() {
 
 void Game::_step(uint curr_gen) {
 	// Push jobs to queue
+    printf("num %d\n",m_thread_num);
 	int size_row = board_height / m_thread_num;
 	int curr_start = 0;
 	done_tasks_num = 0;
-	for(uint i = 1; i < m_thread_num; i++){
-        Task* t;
+	for(uint i = 0; i < m_thread_num; i++){
+        Task* t;/*
 		if(i == m_thread_num && board_height % m_thread_num != 0 )
 			t = new Task(curr_start , curr_start + size_row +
                     (board_height % m_thread_num));
-		else
+		else*/
 			t = new Task(curr_start , curr_start + size_row);
+        printf("lala%d\n",i);
 		this->queue.push(t);
+        printf("lala%d\n",i);
 		curr_start += size_row;
 	}
 
@@ -123,9 +126,10 @@ void Game::_destroy_game(){
         m_threadpool[i]->join();
     }
     //delete all the threads
+    /*
     for(uint i = 0; i < m_thread_num; i++){
         delete(m_threadpool[i]);
-    }
+    }*/
     //delete(queue);
 	// Not implemented in the Game's destructor for testing purposes. 
 	// Testing of your implementation will presume all threads are joined here
