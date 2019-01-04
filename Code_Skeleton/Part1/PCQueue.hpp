@@ -31,8 +31,8 @@ public:
 	void push(const T& item){
         pthread_mutex_lock(&(this->mutex));
         this->queue.push(item);
-        pthread_mutex_unlock(&(this->mutex));
         pthread_cond_broadcast(&(this->cond));
+        pthread_mutex_unlock(&(this->mutex));
     }
 
     ~PCQueue(){

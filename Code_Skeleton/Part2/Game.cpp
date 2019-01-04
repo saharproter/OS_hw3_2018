@@ -100,18 +100,18 @@ void Game::_step(uint curr_gen) {
                     (board_height % m_thread_num));
 		else*/
 			t = new Task(curr_start , curr_start + size_row);
-        printf("lala%d\n",i);
+        printf("step push %d\n",i);
 		this->queue.push(t);
-        printf("lala%d\n",i);
 		curr_start += size_row;
 	}
-
+    printf("should reach\n");
 	// Wait for the workers to finish calculating
 	this->barrier.down();
-
+    printf("222\n");
+    this->mutex.down();
 	// Swap pointers between current and next field
-	current_board = next_move_board;
-
+	//current_board = next_move_board;
+    this->mutex.up();
 	//TODO: something with curr_gen
 }
 

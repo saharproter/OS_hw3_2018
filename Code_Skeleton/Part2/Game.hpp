@@ -68,12 +68,12 @@ protected: // All members here are protected, instead of private for testing pur
 
 	PCQueue<Task*> queue;
 	bool_mat current_board;   //field
-	int board_width;
-	int board_height;
+	uint board_width;
+	uint board_height;
 	bool_mat next_move_board; //next move field
 	Semaphore barrier;    //Semaphore(0)
 	Semaphore mutex;  //Semaphore(1)
-	int done_tasks_num; //counter for done tasks each generation
+	uint done_tasks_num; //counter for done tasks each generation
 	std::string game_name;
 
 	inline void print_board(const char* header);
@@ -89,15 +89,14 @@ protected: // All members here are protected, instead of private for testing pur
 		void thread_workload() override{
 			int neighbors_alive = 0;
 			while(1){
-				printf("ggg1 %d\n", m_thread_id);
 				Task* t = game->queue.pop();
-				printf("ggg2 %d\n", m_thread_id);
+				printf("t end %d\n", t->row_start);
 				if(t->row_start == -1){
 					delete(t);
 					printf("done\n");
 					return;
 				}
-				auto start_time = std::chrono::system_clock::now();
+				//auto start_time = std::chrono::system_clock::now();
 				for(int i = t->row_start; i <= t->row_end; i++){
 					for(uint j = 1; j < game->board_width-1; j++){
 						//printf("%d\n",i);
@@ -128,14 +127,17 @@ protected: // All members here are protected, instead of private for testing pur
 						this->game->mutex.up();
 					}
 				}
-				delete(t);
+				printf("ggg1 %d\n", m_thread_id);
+				//delete(t);
 				this->game->mutex.down();
 				game->done_tasks_num++;
-				if(game->done_tasks_num == game->m_thread_num)
+				if(game->done_tasks_num == game->m_thread_num) {
+					printf("ggg2 %d\n", m_thread_id);
 					this->game->barrier.up();
-				auto end_time = std::chrono::system_clock::now();
-				(game->m_tile_hist).push_back((float) std::chrono::duration_cast
-						<std::chrono::microseconds>(end_time - start_time).count());
+				}
+				//auto end_time = std::chrono::system_clock::now();
+				//(game->m_tile_hist).push_back((float) std::chrono::duration_cast
+				//		<std::chrono::microseconds>(end_time - start_time).count());
 				this->game->mutex.up();
 			}
 		}
