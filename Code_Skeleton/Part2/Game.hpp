@@ -76,7 +76,7 @@ protected: // All members here are protected, instead of private for testing pur
 	int done_tasks_num; //counter for done tasks each generation
 	std::string game_name;
 
-	inline static void print_board(const char* header);
+	inline void print_board(const char* header);
 
 	class Consumer: public Thread{ //a subclass of the thread class, need to
 	public:

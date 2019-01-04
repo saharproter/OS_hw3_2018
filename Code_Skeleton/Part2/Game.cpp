@@ -153,7 +153,7 @@ uint Game::thread_num() const {
 --------------------------------------------------------------------------------*/
 
 inline void Game::print_board(const char* header) {
-/*
+
 	if(print_on){
 
 		// Clear the screen, to create a running animation 
@@ -167,7 +167,7 @@ inline void Game::print_board(const char* header) {
 		// TODO: Print the board
         uint field_width = (int)current_board[0].size() - 2 ;
         uint field_height = (int)current_board.size() - 2;
-        bool_mat field = this->currnt_board;
+        bool_mat field = this->current_board;
         cout << u8"╔" << string(u8"═") * field_width << u8"╗" << endl;
         for (uint i = 1; i <= field_height; ++i) {
             cout << u8"║";
@@ -182,7 +182,7 @@ inline void Game::print_board(const char* header) {
 		if(interactive_on)
 			usleep(GEN_SLEEP_USEC);
 	}
-*/
+
 }
 
 
