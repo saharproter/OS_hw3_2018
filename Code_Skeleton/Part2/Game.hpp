@@ -88,7 +88,6 @@ protected: // All members here are protected, instead of private for testing pur
 	protected:
 		void thread_workload() override{
 			int neighbors_alive = 0;
-			cout << game->board_width << endl;
 			while(1){
 				Task* t = game->queue.pop();
 				if(t->row_start == -1){
@@ -120,7 +119,7 @@ protected: // All members here are protected, instead of private for testing pur
 										(validIndex(i-1,j-1) && game->current_board[i-1][j-1] == LIVE_CELL);
 						//a live cell with different then 2 or number of
 						// neighbors will beacome dead cell in the next move
-						this->game->mutex.down();
+
 						if(game->current_board[i][j] == LIVE_CELL &&
 						   (neighbors_alive != 2 && neighbors_alive != 3)){
 							game->next_move_board[i][j] = DEAD_CELL;
@@ -131,7 +130,7 @@ protected: // All members here are protected, instead of private for testing pur
 						   neighbors_alive == 3){
 							game->next_move_board[i][j] = LIVE_CELL;
 						}
-						this->game->mutex.up();
+
 					}
 				}
 				delete(t);
