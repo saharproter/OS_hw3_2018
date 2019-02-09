@@ -4,10 +4,10 @@
 								  Auxiliary Structures
 --------------------------------------------------------------------------------*/
 
-#include "../Part1/Headers.hpp"
+#include "Headers.hpp"
 #include "Thread.hpp"
-#include "../Part1/PCQueue.hpp"
-#include "../Part1/Semaphore.hpp"
+#include "PCQueue.hpp"
+#include "Semaphore.hpp"
 #include "utils.hpp"
 
 #define DEAD_CELL 0
@@ -68,12 +68,12 @@ protected: // All members here are protected, instead of private for testing pur
 
 	PCQueue<Task*> queue;
 	bool_mat current_board;   //field
-	int board_width;
-	int board_height;
+	uint board_width;
+	uint board_height;
 	bool_mat next_move_board; //next move field
 	Semaphore barrier;    //Semaphore(0)
 	Semaphore mutex;  //Semaphore(1)
-	int done_tasks_num; //counter for done tasks each generation
+	uint done_tasks_num; //counter for done tasks each generation
 	std::string game_name;
 
 	inline void print_board(const char* header);
@@ -145,11 +145,11 @@ protected: // All members here are protected, instead of private for testing pur
 			}
 		}
 
-		bool validIndex(uint x,uint y){
-			return (x < game->board_width &&
+		bool validIndex(uint x,uint y){///changed
+			return (x < game->board_height &&
 					x >= 0 &&
 					y >= 0 &&
-					y < game->board_height);
+					y < game->board_width);
 		}
 	};
 

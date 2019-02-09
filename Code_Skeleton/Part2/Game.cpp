@@ -41,11 +41,11 @@ void Game::_init_game() {
 	// TODO Create game fields
     vector<std::string> lines = utils::read_lines(game_name);
     vector<string> vec = utils::split(lines[0], SPACE);
-    this->current_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
-    this->next_move_board = bool_mat(lines.size() + 2, vector<bool>(vec.size() + 2));
+    this->current_board = bool_mat(lines.size(), vector<bool>(vec.size()));
+    this->next_move_board = bool_mat(lines.size(), vector<bool>(vec.size()));
 
-    for(uint i = 0; i < lines.size()+2; i++){
-        for(uint j = 0; j < vec.size()+2; j++){
+    for(uint i = 0; i < lines.size(); i++){
+        for(uint j = 0; j < vec.size(); j++){
             this->current_board[i][j] = 0;
         }
     }
@@ -57,15 +57,15 @@ void Game::_init_game() {
     }
     
     board_height = lines.size();
-    board_width = lines[0].size();
+    board_width = vec.size();
 
-    for(uint i = 0; i < temp.size(); i++){
-        for(uint j = 0; j < temp[0].size(); j++){
+    for(uint i = 0; i < board_height; i++){
+        for(uint j = 0; j < board_width; j++){
             if(temp[i][j] == "0"){
-                current_board[i + 1][j + 1] = DEAD_CELL;
+                current_board[i][j] = DEAD_CELL;
             }
             else{
-                current_board[i + 1][j + 1] = LIVE_CELL;
+                current_board[i][j] = LIVE_CELL;
             }
         }
     }
@@ -91,7 +91,7 @@ void Game::_step(uint curr_gen) {
 	done_tasks_num = 0;
 	for(uint i = 0; i < m_thread_num; i++){
         Task* t = new Task(curr_start , curr_start + size_row +
-                    (board_height % m_thread_num));
+                (i==m_thread_num-1)*(board_height % m_thread_num));///changed
 		this->queue.push(t);
 		curr_start += size_row;
 	}
@@ -155,13 +155,13 @@ inline void Game::print_board(const char* header) {
 			cout << "<------------" << header << "------------>" << endl;
 
 		// TODO: Print the board
-        uint field_width = (int)current_board[0].size() - 2 ;
-        uint field_height = (int)current_board.size() - 2;
+        uint field_width = (int)current_board[0].size() ;
+        uint field_height = (int)current_board.size();
         bool_mat field = this->current_board;
         cout << u8"╔" << string(u8"═") * field_width << u8"╗" << endl;
-        for (uint i = 1; i <= field_height; ++i) {
+        for (uint i = 0; i < field_height; ++i) {
             cout << u8"║";
-            for (uint j = 1; j <= field_width; ++j) {
+            for (uint j = 0; j < field_width; ++j) {
                 cout << (field[i][j] ? u8"█" : u8"░");
             }
             cout << u8"║" << endl;
